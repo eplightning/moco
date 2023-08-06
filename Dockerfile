@@ -26,7 +26,8 @@ FROM --platform=$TARGETPLATFORM ghcr.io/cybozu-go/moco/mysql:8.0.35.1 as mysql
 FROM --platform=$TARGETPLATFORM ghcr.io/cybozu/ubuntu:22.04
 LABEL org.opencontainers.image.source https://github.com/cybozu-go/moco
 
-ARG MYSQLSH_VERSION=8.0.35-1
+ARG TARGETARCH
+ARG MYSQLSH_VERSION=8.0.35
 
 COPY --from=builder /work/moco-backup /moco-backup
 
@@ -37,9 +38,9 @@ COPY --from=mysql /usr/local/mysql/bin/mysql       /usr/local/mysql/bin/mysql
 RUN apt-get update \
   && apt-get install -y --no-install-recommends libjemalloc2 zstd python3 libpython3.10 s3cmd \
   && rm -rf /var/lib/apt/lists/* \
-  && curl -o /tmp/mysqlsh.deb -fsL https://dev.mysql.com/get/Downloads/MySQL-Shell/mysql-shell_${MYSQLSH_VERSION}ubuntu22.04_amd64.deb \
-  && dpkg -i /tmp/mysqlsh.deb \
-  && rm -f /tmp/mysqlsh.deb
+  && curl -o /tmp/mysqlsh.tar.gz -fsL https://dev.mysql.com/get/Downloads/MySQL-Shell/mysql-shell-${MYSQLSH_VERSION}-linux-glibc2.28-$( if test "$TARGETARCH" = "arm64" ; then echo "arm"; else echo "x86"; fi)-64bit.tar.gz \
+  && tar xf /tmp/mysqlsh.tar.gz --strip 1 -C /usr \
+  && rm -f /tmp/mysqlsh.tar.gz
 
 ENV PATH=/usr/local/mysql/bin:"$PATH"
 USER 10000:10000
