@@ -3,6 +3,7 @@ package bkop
 import (
 	"context"
 	"fmt"
+	"net/netip"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -82,4 +83,14 @@ func (o operator) Ping() error {
 
 func (o operator) Close() {
 	o.db.Close()
+}
+
+func (o operator) connectionString() string {
+	host := o.host
+	ip, err := netip.ParseAddr(host)
+	if err == nil && ip.Is6() {
+		host = "[" + host + "]"
+	}
+
+	return fmt.Sprintf("mysql://%s@%s:%d", o.user, host, o.port)
 }

@@ -22,7 +22,7 @@ func (o operator) PrepareRestore(ctx context.Context) error {
 
 func (o operator) LoadDump(ctx context.Context, dir string) error {
 	args := []string{
-		fmt.Sprintf("mysql://%s@%s:%d", o.user, o.host, o.port),
+		o.connectionString(),
 		"-p" + o.password,
 		"--save-passwords=never",
 		"-C", "False",
