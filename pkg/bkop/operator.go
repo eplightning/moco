@@ -63,7 +63,7 @@ func NewOperator(host string, port int, user, password string, threads int) (Ope
 	cfg.User = user
 	cfg.Passwd = password
 	cfg.Net = "tcp"
-	cfg.Addr = fmt.Sprintf("%s:%d", host, port)
+	cfg.Addr = mysqlAddr(host, port)
 	cfg.InterpolateParams = true
 	cfg.ParseTime = true
 	cfg.Timeout = 5 * time.Second
@@ -86,11 +86,14 @@ func (o operator) Close() {
 }
 
 func (o operator) connectionString() string {
-	host := o.host
+	return fmt.Sprintf("mysql://%s@%s", o.user, mysqlAddr(o.host, o.port))
+}
+
+func mysqlAddr(host string, port int) string {
 	ip, err := netip.ParseAddr(host)
 	if err == nil && ip.Is6() {
 		host = "[" + host + "]"
 	}
 
-	return fmt.Sprintf("mysql://%s@%s:%d", o.user, host, o.port)
+	return fmt.Sprintf("%s:%d", host, port)
 }
